@@ -1,1 +1,8 @@
 Readme
+
+Description of files:
+all tsv files are the raw tweet files
+
+tweet_data.csv is the combination of all raw tsv tweet files using pre_process.py
+
+nn_training.py contains code training the neural network presented in the video
