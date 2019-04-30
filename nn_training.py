@@ -62,7 +62,7 @@ Y = np.zeros((len(tokenized_sents), len(np.unique(df.label_binary))), dtype=np.u
 for i in range(len(tokenized_sents)):
     Y[i][df.label_binary.tolist()[i]]=1
 
-#Y = np.array(df1.domain1_score)
+# test training split
 random.seed(3)
 rand_index = random.sample(range(len(Y)), len(Y))
 X_shuffle = X[rand_index]
@@ -73,8 +73,10 @@ Y_train = Y_shuffle[:split_index,]
 X_test = X_shuffle[split_index:,:]
 Y_test = Y_shuffle[split_index:,]
 
+# nn model CNN and RNN, this part can be changed to test different model config
 model = Sequential()
 model.add(Embedding(2000, 64, input_length=30))
+model.add(Conv1D(128, 3, activation='relu'))
 model.add(Bidirectional(LSTM(64)))
 model.add(Dense(256,activation='relu'))
 model.add(Dense(3, activation='sigmoid'))
@@ -84,6 +86,19 @@ train_history = model.fit(X_train,Y_train,batch_size=32,epochs=10,
           callbacks=[EarlyStopping(monitor='val_loss',min_delta=0.0001)],
           validation_data=[X_test, Y_test])
 
+
+# example with RNN only
+#model = Sequential()
+#model.add(Embedding(2000, 64, input_length=30))
+#model.add(Bidirectional(LSTM(64)))
+#model.add(Dense(256,activation='relu'))
+#model.add(Dense(3, activation='sigmoid'))
+#model.compile(optimizer=RMSprop(),loss = 'categorical_crossentropy',metrics=['accuracy'])
+#
+#train_history = model.fit(X_train,Y_train,batch_size=32,epochs=10,
+#          callbacks=[EarlyStopping(monitor='val_loss',min_delta=0.0001)],
+#          validation_data=[X_test, Y_test])
+
 y_pred = model.predict(X_test)
 idx = np.argmax(y_pred, axis=-1)
 pred_result = np.zeros(y_pred.shape )
@@ -91,9 +106,9 @@ pred_result[np.arange(pred_result.shape[0]), idx] = 1
 temp = [list(i).index(1) for i in list(pred_result)]
 
 Y_test1 = [list(i).index(1) for i in list(Y_test)]
-#df['aaa'] = temp
 confusion_matrix(Y_test1,temp)
 
+# Use afinn as comparsion
 afinn = Afinn()
 score = []
 for i in range(len(df.index)):
@@ -106,7 +121,8 @@ df.loc[df['score']==0,'pred'] = 1
 df.loc[df['score']>0,'pred'] = 2
 
 len(df[df['pred']==df['label_binary']])
-    
+
+# confusion matrix with afinn
 len(df)
 confusion_matrix(df['pred'], df['label_binary'])
 
@@ -116,6 +132,7 @@ df111['aaa'] = Y_test1
 len(df111[df111['aaa']==1])
 len(df111)
 
+# vader
 analyser = SentimentIntensityAnalyzer()
 score = []
 for i in range(len(df.index)):
